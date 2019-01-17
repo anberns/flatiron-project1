@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require_relative '../config/environment'
+
+
+scraper = TechnoDelivery::Scraper.new
+crate = scraper.scrape
+binding.pry
+
+track_data1 = {
+    :name => "track_one",
+    :url => "http"
+}
+
+track_data2 = {
+    :name => "track_one",
+    :url => "http"
+}
+
+
+release_data = [
+    {
+    :name => "album_one",
+    :artist => "Archm",
+    :label => "Dial",
+    :country => "UK",
+    :subgenre => "techno",
+    :tracks => [
+        track_data1,
+        track_data2
+    ]
+    }
+]
+
+#release = TechnoDelivery::Release.create_from_hash(release_data, nil)
+#puts release
+
+week_data = {
+    :week => "1/1/19",
+    :releases => [
+      release_data  
+    ]
+}
+
+#crate = TechnoDelivery::Crate.create_from_scrape(week_data)
+#puts crate.week
+#puts crate.releases[0]

@@ -13,7 +13,7 @@ class TechnoDelivery::Track
     end
 
     def self.create_from_hash(track_hash, release)
-        new_track = Track.new(track_hash,release)
+        new_track = TechnoDelivery::Track.new(track_hash,release)
         @@all << new_track 
         new_track
     end

@@ -6,22 +6,24 @@ class TechnoDelivery::Release
     @@all = []
 
     def initialize(release_hash, crate)
-        release_hash.each {|key, value| self.send(("#{key}="), value)}
-        @tracks = self.create_tracks(@tracks) 
-
+        @name = release_hash[:name]
+        @artist = release_hash[:artist]
+        @label = release_hash[:label]
+        @country = release_hash[:country]
+        @subgenre = release_hash[:subgenre]
+        @tracks = self.create_tracks(release_hash[:tracks]) 
+        @crate = crate
         @@all << self
     end
 
-    def self.create_from_hash(releases, crate)
-        releases.each do |release|
-            new_release = Release.new(release, crate)
-        end
+    def self.create_from_hash(release, crate)
+        new_release = TechnoDelivery::Release.new(release, crate)
     end
 
     def create_tracks(tracks)
         track_objects = []
         tracks.each do |track|
-            track_objects << Track.create_from_hash(track, self)
+            track_objects << TechnoDelivery::Track.create_from_hash(track, self)
         end
         track_objects
     end

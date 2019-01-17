@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/techno_delivery'
+
+TechnoDelivery::CLI.new.call

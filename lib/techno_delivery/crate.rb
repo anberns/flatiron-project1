@@ -13,13 +13,22 @@ class TechnoDelivery::Crate
         @@all << self
     end
 
-    #week_data = {:week => "date", :releases => [Release objects]}
     def self.create_from_scrape(week_data)
-        crate = Crate.new(week_data.week)
-        week_data.releases.each do |release|
-            new_release = Release.create_from_hash(release, crate)
+        crate = TechnoDelivery::Crate.new(week_data[:week])
+        week_data[:releases].each do |release|
+            new_release = TechnoDelivery::Release.create_from_hash(release, crate.week)
             crate.releases << new_release
         end
         crate
-      end
+    end
+
+    def gather_releases_by_subgenre(subgenre)
+        check = self.releases 
+        collected = [] 
+        self.releases.each do |release|
+            collected << release if release.subgenre == subgenre
+        end
+        collected 
+    end
+
 end

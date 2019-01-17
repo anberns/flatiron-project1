@@ -1,27 +1,32 @@
+require "pry"
 class TechnoDelivery::Scraper
     def scrape 
         week_data = {
-            :date = "1/1/19" # find source
-            :releases = []
+            :week => "1/1/19", # find source
+            :releases => []
         }
 
         html = open("https://hardwax.com/this-week/")
         page = Nokogiri::HTML(html) 
-        page.css("div.listing block").each do |release|
+        records = page.xpath('//div[starts-with(@id, "record")]')
+        records.each do |release|
             a_hrefs = []
+            release_object = {}
             data = release.css("div.linesmall")
             subgenre = self.parse_subgenre(data.css("p").text)
-            a_hrefs << data.css("a").attribute("href").value
+            data.css("a").each do |txt|
+                a_hrefs << txt.text 
+            end
             release_object = {
                 :label => a_hrefs[0],
-                :country => a_hrefs[2]
+                :country => a_hrefs[2],
                 :subgenre => subgenre
             }
             tracks = []
             tracks_data = data.css("a.download_listen")
             tracks_data.each do |track_data|
                 track = {
-                    :url => track_data.attribute("href").value
+                    :url => track_data.attribute("href").value,
                     :name => track_data.text 
                 }
                 tracks << track
@@ -29,19 +34,85 @@ class TechnoDelivery::Scraper
             
             release_object[:tracks] = tracks
             other_data = release.css("div.linebig")
-            release_object[:name] = other_data.css("a").attribute("href").value
-            release_object[:artist] = other_data.text
+            release_artist, release_name = other_data.text.split(":")
+            self.force_strip(release_name)
+            release_object[:name] = release_name
+            release_object[:artist] = release_artist.gsub(/:/, "")
             week_data[:releases] << release_object
         end
 
-        # week_data = {:week => "date", :releases => [release objects]}
-        Crate.create_from_scrape(week_data)
+        TechnoDelivery::Crate.create_from_scrape(week_data)
+    end
+
+    def force_strip(str)
+        str[0] = ""
     end
 
     def parse_subgenre(description)
-        # add logic to pull subgenre from desc
-        "techno"
+        techno_proper = [
+            "hard",
+            "banging",
+            "driving",
+            "stomping",
+            "boomy",
+            "big room",
+            "bangers"
+        ]
+
+        electro = [
+            "electro"
+        ]
+
+        house = [
+            "house"
+        ]
+        atmospheric = [
+            "ambient",
+            "dreamy",
+            "spaced out",
+            "spacy",
+            "deep",
+            "space",
+            "atmospheric",
+            "mesmerizing"
+        ]
+
+        highly_recommended = [
+            "highly",
+            "recommended",
+            "recommend"
+        ]
+        description.downcase!
+        
+        highly_recommended.each do |word|
+            if description.include?(word)
+                return "recommended"
+            end
+        end
+        electro.each do |word|
+            if description.include?(word)
+                return "electro"
+            end
+        end
+
+        house.each do |word|
+            if description.include?(word)
+                return "house"
+            end
+        end
+
+        atmospheric.each do |word|
+            if description.include?(word)
+                return "atmospheric"
+            end
+        end
+
+        techno_proper.each do |word|
+            if description.include?(word)
+                return "techno proper"
+            end
+        end
+
+        return "other"
     end
 end
-
-# release_object => :name, :artist, :label, :country, :subgenre, :tracks, :crate
