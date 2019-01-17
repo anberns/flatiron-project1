@@ -1,3 +1,6 @@
+require 'fileutils'
+include Process
+
 class TechnoDelivery::CLI
 
     def call
@@ -15,7 +18,7 @@ class TechnoDelivery::CLI
         while acceptable_answers.none? { |answer| answer == input_i } == true
             puts "\nI'm sorry, that's not a valid option."
             puts "Please enter a number from 1 - 7."
-            input = gets.strip
+            input_i = gets.strip
         end
         
         tracks = []
@@ -38,17 +41,20 @@ class TechnoDelivery::CLI
 
         self.display_releases(tracks)
 
-        puts "\n\n1. View another genre.\n2. Exit"
+        puts "\n\n1. Listen to tracks\n2. View another genre.\n3. Exit"
         input = gets.strip
         input_i = input.to_i
-        acceptable_answers = (1..2).to_a
+        acceptable_answers = (1..3).to_a
         while acceptable_answers.none? { |answer| answer == input_i }
             puts "\nI'm sorry, that's not a valid option."
-            puts "Please enter 1 or 2."
-            input = gets.strip
+            puts "Please enter 1, 2, or 3."
+            input_i = gets.strip
         end 
 
         if input_i == 1
+            self.play_tracks(tracks)
+            self.start(crate)
+        elsif input_i == 2
             self.start(crate)
         else 
             puts "Have a good one!"
@@ -61,14 +67,32 @@ class TechnoDelivery::CLI
     end
 
     def display_releases(releases)
+        url = ""
         releases.each do |release|
-            puts "\n\n#{release.name}"
-            puts "-by #{release.artist} on #{release.label}\n"
+            puts "\n\n#{release.name} by #{release.artist} on #{release.label}\n"
             release.tracks.each_with_index do |track, index|
-                puts "\n\t#{index + 1}. #{track.name}\n\t#{track.url}"
+                puts "-#{track.name}"
+                url = track.url
             end
         end
     end
 
+    def play_tracks(releases)
+        puts "\n"
+        releases.each do |release|
+            release.tracks.each do |track|
+                puts "Playing #{release.name} - #{track.name} (Press enter to skip)"
+                tempfile = URI.parse(track.url).open
+                tempfile.close
+                FileUtils.mv tempfile.path, "audio.mp3"
+                pid = fork{ exec 'afplay', "audio.mp3"}
+                pid2 = fork{ 
+                    input = gets 
+                    kill(1, pid)
+                }
+                waitpid(pid, 0) 
+            end
+        end
+    end
 
 end
