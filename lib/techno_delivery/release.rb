@@ -23,6 +23,7 @@ class TechnoDelivery::Release
         new_release = TechnoDelivery::Release.new(release, crate)
     end
 
+    # turns track data into track objects
     def create_tracks(tracks)
         track_objects = []
         tracks.each do |track|

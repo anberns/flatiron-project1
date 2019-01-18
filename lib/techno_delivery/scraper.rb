@@ -1,5 +1,7 @@
-require "pry"
 class TechnoDelivery::Scraper
+
+    # collects most current release information, passes to Crate
+    # create method
     def scrape 
         d = DateTime.now
         d.strftime("%d/%m/%Y")
@@ -11,50 +13,57 @@ class TechnoDelivery::Scraper
             "https://hardwax.com/this-week/",
             "https://hardwax.com/this-week/?page=2"
         ]
-        urls.each do |url|
-            html = open(url)
-            page = Nokogiri::HTML(html) 
-            records = page.xpath('//div[starts-with(@id, "record")]')
-            records.each do |release|
-                a_hrefs = []
-                release_object = {}
-                data = release.css("div.linesmall")
-                subgenre = self.parse_subgenre(data.css("p").text)
-                data.css("a").each do |txt|
-                    a_hrefs << txt.text 
-                end
-                release_object = {
-                    :label => a_hrefs[0],
-                    :country => a_hrefs[2],
-                    :subgenre => subgenre
-                }
-                tracks = []
-                tracks_data = data.css("a.download_listen")
-                tracks_data.each do |track_data|
-                    track = {
-                        :url => track_data.attribute("href").value,
-                        :name => track_data.text 
+        begin
+            urls.each do |url|
+                html = open(url)
+                page = Nokogiri::HTML(html) 
+                records = page.xpath('//div[starts-with(@id, "record")]')
+                records.each do |release|
+                    a_hrefs = []
+                    release_object = {}
+                    data = release.css("div.linesmall")
+                    subgenre = self.parse_subgenre(data.css("p").text)
+                    data.css("a").each do |txt|
+                        a_hrefs << txt.text 
+                    end
+                    release_object = {
+                        :label => a_hrefs[0],
+                        :country => a_hrefs[2],
+                        :subgenre => subgenre
                     }
-                    tracks << track
+                    tracks = []
+                    tracks_data = data.css("a.download_listen")
+                    tracks_data.each do |track_data|
+                        track = {
+                            :url => track_data.attribute("href").value,
+                            :name => track_data.text 
+                        }
+                        tracks << track
+                    end
+                    
+                    release_object[:tracks] = tracks
+                    other_data = release.css("div.linebig")
+                    release_artist, release_name = other_data.text.split(":")
+                    self.force_strip(release_name)
+                    release_object[:name] = release_name
+                    release_object[:artist] = release_artist.gsub(/:/, "")
+                    week_data[:releases] << release_object
                 end
-                
-                release_object[:tracks] = tracks
-                other_data = release.css("div.linebig")
-                release_artist, release_name = other_data.text.split(":")
-                self.force_strip(release_name)
-                release_object[:name] = release_name
-                release_object[:artist] = release_artist.gsub(/:/, "")
-                week_data[:releases] << release_object
             end
+        rescue
+            puts "Error: Something went wrong with the Hard Wax URL!"
+            exit(1)  
         end
 
         TechnoDelivery::Crate.create_from_scrape(week_data)
     end
 
+    # removes stubborn ' ' from beginning of release name
     def force_strip(str)
         str[0] = ""
     end
 
+    # decides and returns subgenre based on record store description
     def parse_subgenre(description)
         subgenres = [
             [
@@ -94,6 +103,7 @@ class TechnoDelivery::Scraper
         return self.find_subgenre(subgenres, subgenre_titles, description)
    end
 
+   # helper method to search description for subgenre keywords
     def find_subgenre(subgenres, subgenre_titles, description) 
         description.downcase!
         subgenres.each_with_index do |subgenre, index|

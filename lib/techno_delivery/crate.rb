@@ -24,6 +24,7 @@ class TechnoDelivery::Crate
         crate
     end
 
+    # collect and return releases of chosen subgenre
     def gather_releases_by_subgenre(subgenre)
         check = self.releases 
         collected = [] 

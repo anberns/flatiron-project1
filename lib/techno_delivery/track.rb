@@ -1,6 +1,5 @@
 class TechnoDelivery::Track 
 
-    # owned by release 
     attr_accessor :name, :url
     attr_reader :release
 
