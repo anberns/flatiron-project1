@@ -1,6 +1,5 @@
 class TechnoDelivery::Release 
 
-    # has several tracks
     attr_accessor :name, :artist, :label, :country, :subgenre, :tracks, :crate
 
     @@all = []
@@ -14,6 +13,10 @@ class TechnoDelivery::Release
         @tracks = self.create_tracks(release_hash[:tracks]) 
         @crate = crate
         @@all << self
+    end
+
+    def self.all 
+        @@all 
     end
 
     def self.create_from_hash(release, crate)

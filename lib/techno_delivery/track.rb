@@ -6,7 +6,6 @@ class TechnoDelivery::Track
 
     @@all = []
 
-    # initialized with file name, url, release object
     def initialize(track_hash, release)
         track_hash.each {|key, value| self.send(("#{key}="), value)}
         @release = release 

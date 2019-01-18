@@ -56,70 +56,54 @@ class TechnoDelivery::Scraper
     end
 
     def parse_subgenre(description)
-        techno_proper = [
-            "hard",
-            "banging",
-            "driving",
-            "stomping",
-            "boomy",
-            "big room",
-            "bangers"
+        subgenres = [
+            [
+                "highly",
+                "recommended",
+                "recommend"
+            ],
+            [
+                "ambient",
+                "dreamy",
+                "spaced out",
+                "spacy",
+                "deep",
+                "space",
+                "atmospheric",
+                "mesmerizing"
+            ],
+            [
+                "hard",
+                "banging",
+                "driving",
+                "stomping",
+                "boomy",
+                "big room",
+                "techno"
+            ],
+            [
+                "electro"
+            ],
+            [
+                "house"
+            ]
         ]
+        subgenre_titles = [
+            "recommended", "atmospheric", "techno proper", "electro" 
+        ]
+        return self.find_subgenre(subgenres, subgenre_titles, description)
+   end
 
-        electro = [
-            "electro"
-        ]
-
-        house = [
-            "house"
-        ]
-        atmospheric = [
-            "ambient",
-            "dreamy",
-            "spaced out",
-            "spacy",
-            "deep",
-            "space",
-            "atmospheric",
-            "mesmerizing"
-        ]
-
-        highly_recommended = [
-            "highly",
-            "recommended",
-            "recommend"
-        ]
+    def find_subgenre(subgenres, subgenre_titles, description) 
         description.downcase!
-        
-        highly_recommended.each do |word|
-            if description.include?(word)
-                return "recommended"
+        subgenres.each_with_index do |subgenre, index|
+            subgenre.each do |word|
+                if description.include?(word)
+                    return subgenre_titles[index]
+                end
             end
         end
-        electro.each do |word|
-            if description.include?(word)
-                return "electro"
-            end
-        end
-
-        house.each do |word|
-            if description.include?(word)
-                return "house"
-            end
-        end
-
-        atmospheric.each do |word|
-            if description.include?(word)
-                return "atmospheric"
-            end
-        end
-
-        techno_proper.each do |word|
-            if description.include?(word)
-                return "techno proper"
-            end
-        end
-
         return "other"
     end
+
 end

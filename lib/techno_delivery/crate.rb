@@ -1,7 +1,5 @@
 class TechnoDelivery::Crate 
 
-    # has many releases
-        # has several tracks 
     attr_accessor :week, :releases
 
     @@all = []
@@ -11,6 +9,10 @@ class TechnoDelivery::Crate
         @releases = []
 
         @@all << self
+    end
+
+    def self.all 
+        @@all 
     end
 
     def self.create_from_scrape(week_data)

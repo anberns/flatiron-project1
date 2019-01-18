@@ -5,20 +5,20 @@ class TechnoDelivery::CLI
 
     def call
       crate = TechnoDelivery::Scraper.new.scrape
-      puts "\nTechno Delivery!\n\nFresh tracks from Hard Wax ready for perusal.\n\n"
+      puts "\nTechno Delivery!\n\nFresh tracks from Hard Wax ready for sampling.\n\n"
       start(crate)
     end
 
     def start(crate)
         puts "What are you in the mood for?" 
-        puts "1. Techno proper\n2. Electro\n3. House\n4. Atmospheric\n5. Highly recommeneded\n6. Other\n7. All\n"
+        puts "1. Techno Proper\n2. Electro\n3. House\n4. Atmospheric\n5. Highly Recommeneded\n6. Other\n7. All\n"
         input = gets.strip
         input_i = input.to_i
         acceptable_answers = (1..7).to_a
-        while acceptable_answers.none? { |answer| answer == input_i } == true
+        while !acceptable_answers.any? { |answer| answer == input_i }
             puts "\nI'm sorry, that's not a valid option."
             puts "Please enter a number from 1 - 7."
-            input_i = gets.strip
+            input_i = gets.strip.to_i
         end
         
         tracks = []
@@ -40,26 +40,44 @@ class TechnoDelivery::CLI
             end
 
         self.display_releases(tracks)
+        self.listen?(tracks, crate)
+    end
 
-        puts "\n\n1. Listen to tracks\n2. View another genre.\n3. Exit"
+    def listen?(tracks, crate)
+        puts "\n\nListen to tracks?\n1. Yes\n2. No"
         input = gets.strip
         input_i = input.to_i
-        acceptable_answers = (1..3).to_a
-        while acceptable_answers.none? { |answer| answer == input_i }
+        acceptable_answers = (1..2).to_a
+        while !acceptable_answers.any? { |answer| answer == input_i }
             puts "\nI'm sorry, that's not a valid option."
-            puts "Please enter 1, 2, or 3."
-            input_i = gets.strip
+            puts "Please enter 1 or 2."
+            input_i = gets.strip.to_i
         end 
 
         if input_i == 1
             self.play_tracks(tracks)
-            self.start(crate)
-        elsif input_i == 2
-            self.start(crate)
+            self.again_or_exit?(crate)
         else 
+            self.again_or_exit?(crate)
+        end
+    end 
+
+    def again_or_exit?(crate)
+        puts "\n\nWhat would you like to do now?\n1. View another genre.\n2. Exit"
+        input = gets.strip
+        input_i = input.to_i
+        acceptable_answers = (1..2).to_a
+        while acceptable_answers.none? { |answer| answer == input_i }
+            puts "\nI'm sorry, that's not a valid option."
+            puts "Please enter 1 or 2."
+            input_i = gets.strip.to_i
+        end 
+
+        if input_i == 1
+            self.start(crate)
+        else
             puts "Have a good one!"
         end
-
     end 
 
     def get_tracks(crate, subgenre)
@@ -78,10 +96,10 @@ class TechnoDelivery::CLI
     end
 
     def play_tracks(releases)
-        puts "\n"
+        puts "\n***Press enter to skip***"
         releases.each do |release|
             release.tracks.each do |track|
-                puts "Playing #{release.name} - #{track.name} (Press enter to skip)"
+                puts "Playing #{release.name} - #{track.name}"
                 tempfile = URI.parse(track.url).open
                 tempfile.close
                 FileUtils.mv tempfile.path, "audio.mp3"
@@ -91,6 +109,7 @@ class TechnoDelivery::CLI
                     kill(1, pid)
                 }
                 waitpid(pid, 0) 
+                kill(1, pid2)
             end
         end
     end
